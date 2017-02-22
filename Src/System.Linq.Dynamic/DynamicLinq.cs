@@ -1465,6 +1465,11 @@ namespace System.Linq.Dynamic
                         throw ParseError(errorPos, Res.NoApplicableMethod,
                             id, GetTypeName(type));
                     case 1:
+                        MethodInfo method = (MethodInfo)mb;
+                        if (!IsPredefinedType(method.DeclaringType) || !IsPredefinedType(method.ReturnType))
+                        {
+                            throw ParseError(errorPos, Res.MethodsAreInaccessible, GetTypeName(method.DeclaringType));
+                        }
                         return Expression.Call(instance, (MethodInfo)mb, args);
                     default:
                         throw ParseError(errorPos, Res.AmbiguousMethodInvocation,
@@ -1591,6 +1596,12 @@ namespace System.Linq.Dynamic
                             GetTypeName(expr.Type));
                 }
             }
+        }
+
+        static bool IsPredefinedType(Type type)
+        {
+            foreach (Type t in predefinedTypes) if (t == type) return true;
+            return false;
         }
 
         static bool IsNullableType(Type type)
